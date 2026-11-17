@@ -12,18 +12,22 @@ find_package(rclcpp REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RobotStatus.msg"
+  "srv/SetStatus.srv"
 )
 
 rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 add_executable(status_monitor src/status_monitor.cpp)
+add_executable(status_hub src/status_hub.cpp)
+
 target_include_directories(status_monitor PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
 target_compile_features(status_monitor PUBLIC c_std_17 cxx_std_20)  # Require C17 and C++20
 target_link_libraries(status_monitor PUBLIC rclcpp::rclcpp "${cpp_typesupport_target}")
+target_link_libraries(status_hub PUBLIC rclcpp::rclcpp "${cpp_typesupport_target}")
 
-install(TARGETS status_monitor
+install(TARGETS status_monitor status_hub
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
