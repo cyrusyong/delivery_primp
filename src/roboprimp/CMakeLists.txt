@@ -9,6 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RobotStatus.msg"
@@ -25,7 +26,7 @@ target_include_directories(status_monitor PUBLIC
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
 target_compile_features(status_monitor PUBLIC c_std_17 cxx_std_20)  # Require C17 and C++20
 target_link_libraries(status_monitor PUBLIC rclcpp::rclcpp "${cpp_typesupport_target}")
-target_link_libraries(status_hub PUBLIC rclcpp::rclcpp "${cpp_typesupport_target}")
+target_link_libraries(status_hub PUBLIC rclcpp::rclcpp "${std_msgs_TARGETS}" "${cpp_typesupport_target}")
 
 install(TARGETS status_monitor status_hub
   DESTINATION lib/${PROJECT_NAME})
