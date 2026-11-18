@@ -2,6 +2,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "roboprimp/msg/robot_status.hpp"
+#include "roboprimp/srv/set_battery.hpp"
 #include "roboprimp/srv/set_position.hpp"
 #include "roboprimp/srv/set_status.hpp"
 
@@ -78,14 +79,31 @@ class Status : public rclcpp::Node {
       }
     };
 
+    auto set_battery = [this](
+                           const std::shared_ptr<roboprimp::srv::SetBattery::Request> request,
+                           std::shared_ptr<roboprimp::srv::SetBattery::Response> response) -> void {
+      if (request->incoming_battery_level <= 100) {
+        response->is_valid = true;
+
+        _status.battery_level = request->incoming_battery_level;
+        RCLCPP_INFO(this->get_logger(), "Battery Set to %d", request->incoming_battery_level);
+        _status_pub->publish(_status);
+      } else {
+        response->is_valid = false;
+        RCLCPP_ERROR(this->get_logger(), "Trying to set invalid battery level");
+      }
+    };
+
     _set_status = this->create_service<roboprimp::srv::SetStatus>("set_status", set_status);
     _set_position = this->create_service<roboprimp::srv::SetPosition>("set_position", set_position);
+    _set_battery = this->create_service<roboprimp::srv::SetBattery>("set_battery", set_battery);
     _status_pub = this->create_publisher<roboprimp::msg::RobotStatus>("status", 5);
   }
 
  private:
   rclcpp::Service<roboprimp::srv::SetStatus>::SharedPtr _set_status;
   rclcpp::Service<roboprimp::srv::SetPosition>::SharedPtr _set_position;
+  rclcpp::Service<roboprimp::srv::SetBattery>::SharedPtr _set_battery;
   rclcpp::Publisher<roboprimp::msg::RobotStatus>::SharedPtr _status_pub;
 
   enum class status_codes : uint8_t { IDLE, STOPPING, RUNNING, BLOCKED, ERROR };
