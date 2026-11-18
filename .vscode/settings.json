@@ -1,0 +1,7 @@
+{
+    "cmake.sourceDirectory": "/home/roboprimp/delivery_primp/src/roboprimp",
+    "clangd.arguments": [
+      "--compile-commands-dir=${workspaceFolder}/build/roboprimp"
+    ],
+    "C_Cpp.errorSquiggles": "disabled"
+}

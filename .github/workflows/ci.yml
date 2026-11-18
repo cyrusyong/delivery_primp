@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+
+      - name: Check C++ formatting
+        run: |
+          mapfile -t files < <(find src -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' -o -name '*.cc' \))
+          if ((${#files[@]} == 0)); then
+            echo "No C++ sources found under src/"
+            exit 0
+          fi
+          clang-format --dry-run --Werror "${files[@]}"
+
+  build:
+    name: Build (ROS 2 Lyrical)
+    runs-on: ubuntu-latest
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-resolute-ros-lyrical-ros-base-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build roboprimp
+        uses: ros-tooling/action-ros-ci@v0.4
+        with:
+          package-name: roboprimp
+          target-ros2-distro: lyrical
+          skip-tests: true
