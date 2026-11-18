@@ -2,9 +2,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "roboprimp/msg/robot_status.hpp"
+#include "roboprimp/srv/set_position.hpp"
 #include "roboprimp/srv/set_status.hpp"
-
-using namespace std::chrono_literals;
 
 class Status : public rclcpp::Node {
  public:
@@ -58,12 +57,35 @@ class Status : public rclcpp::Node {
       }
     };
 
+    auto set_position =
+        [this](const std::shared_ptr<roboprimp::srv::SetPosition::Request> request,
+               std::shared_ptr<roboprimp::srv::SetPosition::Response> response) -> void {
+      // BOUNDING to -100 to 100 FOR NOW
+      int64_t x_coord = request->x_coord;
+      int64_t y_coord = request->y_coord;
+
+      if (x_coord >= -100 && x_coord <= 100 && y_coord >= -100 && y_coord <= 100) {
+        response->is_valid = true;
+
+        _status.x_coord = x_coord;
+        _status.y_coord = y_coord;
+        _status_pub->publish(_status);
+
+        RCLCPP_INFO(this->get_logger(), "Set x: %ld, Set y:%ld", x_coord, y_coord);
+      } else {
+        response->is_valid = false;
+        RCLCPP_ERROR(this->get_logger(), "Position out of bounds");
+      }
+    };
+
     _set_status = this->create_service<roboprimp::srv::SetStatus>("set_status", set_status);
+    _set_position = this->create_service<roboprimp::srv::SetPosition>("set_position", set_position);
     _status_pub = this->create_publisher<roboprimp::msg::RobotStatus>("status", 5);
   }
 
  private:
   rclcpp::Service<roboprimp::srv::SetStatus>::SharedPtr _set_status;
+  rclcpp::Service<roboprimp::srv::SetPosition>::SharedPtr _set_position;
   rclcpp::Publisher<roboprimp::msg::RobotStatus>::SharedPtr _status_pub;
 
   enum class status_codes : uint8_t { IDLE, STOPPING, RUNNING, BLOCKED, ERROR };
