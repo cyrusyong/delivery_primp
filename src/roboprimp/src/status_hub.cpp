@@ -82,7 +82,7 @@ class Status : public rclcpp::Node {
     auto set_battery = [this](
                            const std::shared_ptr<roboprimp::srv::SetBattery::Request> request,
                            std::shared_ptr<roboprimp::srv::SetBattery::Response> response) -> void {
-      if (request->incoming_battery_level <= 100) {
+      if (request->incoming_battery_level >= 0 && request->incoming_battery_level <= 100) {
         response->is_valid = true;
 
         _status.battery_level = request->incoming_battery_level;

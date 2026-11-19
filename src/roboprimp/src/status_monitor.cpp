@@ -13,7 +13,7 @@ class StatusMonitor : public rclcpp::Node {
   StatusMonitor() : Node("status_monitor") {
     auto receive_message = [this](const roboprimp::msg::RobotStatus::UniquePtr msg) -> void {
       RCLCPP_INFO(this->get_logger(), "State: %s", msg->status.c_str());
-      RCLCPP_INFO(this->get_logger(), "Battery: %ld", msg->battery_level);
+      RCLCPP_INFO(this->get_logger(), "Battery: %d", msg->battery_level);
       RCLCPP_INFO(this->get_logger(), "x: %ld", msg->x_coord);
       RCLCPP_INFO(this->get_logger(), "y: %ld", msg->y_coord);
     };
