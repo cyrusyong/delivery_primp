@@ -19,7 +19,7 @@ class StatusMonitor : public rclcpp::Node {
     };
 
     auto receive_logs = [this](const rcl_interfaces::msg::Log log) -> void {
-      if (log.name == this->get_name()) {
+      if (log.name == this->get_logger().get_name()) {
         return;
       }
       switch (log.level) {
@@ -43,7 +43,7 @@ class StatusMonitor : public rclcpp::Node {
 
     _status_monitor =
         this->create_subscription<roboprimp::msg::RobotStatus>("status", 10, receive_message);
-    _log_monitor = this->create_subscription<rcl_interfaces::msg::Log>("rosout", 10, receive_logs);
+    _log_monitor = this->create_subscription<rcl_interfaces::msg::Log>("/rosout", 10, receive_logs);
   }
 
  private:
