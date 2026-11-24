@@ -19,6 +19,9 @@ class StatusMonitor : public rclcpp::Node {
     };
 
     auto receive_logs = [this](const rcl_interfaces::msg::Log log) -> void {
+      if (log.name == this->get_logger().get_name()) {
+        return;
+      }
       switch (log.level) {
         case (WARN): {
           RCLCPP_WARN(this->get_logger(), "WARN: %s", log.msg.c_str());
